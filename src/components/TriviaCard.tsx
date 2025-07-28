@@ -16,19 +16,36 @@ interface Props {
 export function TriviaCard({ data, onAnswer }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [shuffled, setShuffled] = useState<string[]>([]);
+  const [timeLeft, setTimeLeft] = useState(30);
 
   useEffect(() => {
     setShuffled(
       [...data.incorrect_answers, data.correct_answer].sort(() => 0.5 - Math.random())
     );
     setSelected(null);
+    setTimeLeft(30);
   }, [data]);
 
+  useEffect(() => {
+    if (selected) return;
+    if (timeLeft === 0) {
+      setSelected("time_expired");
+      setTimeout(() => {
+        onAnswer(false, data.difficulty);
+      }, 1000);
+      return;
+    }
+
+    const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft, selected]);
+
   const checkAnswer = (answer: string) => {
+    if (selected) return;
     setSelected(answer);
     setTimeout(() => {
       onAnswer(answer === data.correct_answer, data.difficulty);
-    }, 1200);
+    }, 1000);
   };
 
   const decode = (str: string) => {
@@ -43,7 +60,12 @@ export function TriviaCard({ data, onAnswer }: Props) {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white text-black p-6 rounded-2xl shadow-xl max-w-xl w-full"
     >
-      <h2 className="text-lg font-semibold mb-4">{decode(data.question)}</h2>
+      <div className="flex justify-between mb-4">
+        <h2 className="text-lg font-semibold">{decode(data.question)}</h2>
+        <div className={`font-bold ${timeLeft <= 5 ? 'text-red-600' : 'text-blue-600'}`}>
+          ⏳ {timeLeft}s
+        </div>
+      </div>
       <div className="grid gap-3">
         {shuffled.map((option) => {
           const isCorrect = selected && option === data.correct_answer;
@@ -69,6 +91,9 @@ export function TriviaCard({ data, onAnswer }: Props) {
           );
         })}
       </div>
+      {selected === "time_expired" && (
+        <p className="mt-3 text-red-500 font-semibold">Tempo esgotado!</p>
+      )}
     </motion.div>
   );
 }

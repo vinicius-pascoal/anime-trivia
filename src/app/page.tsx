@@ -88,7 +88,7 @@ export default function HomePage() {
   return (
     <Background>
       <main className="text-center text-white p-4">
-        <h1 className="text-4xl font-bold mb-6">🎌 Anime Trivia</h1>
+        <h1 className="text-4xl font-bold mb-6">Anime Trivia</h1>
 
         {gameState === "start" && (
           <>

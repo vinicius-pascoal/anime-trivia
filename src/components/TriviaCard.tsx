@@ -1,29 +1,34 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   data: {
     question: string;
     correct_answer: string;
     incorrect_answers: string[];
+    difficulty: string;
   };
-  onNext: () => void;
+  onAnswer: (isCorrect: boolean, difficulty: string) => void;
 }
 
-export function TriviaCard({ data, onNext }: Props) {
+export function TriviaCard({ data, onAnswer }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
-  const [shuffled, setShuffled] = useState<string[]>(() =>
-    [...data.incorrect_answers, data.correct_answer].sort(() => 0.5 - Math.random())
-  );
+  const [shuffled, setShuffled] = useState<string[]>([]);
+
+  useEffect(() => {
+    setShuffled(
+      [...data.incorrect_answers, data.correct_answer].sort(() => 0.5 - Math.random())
+    );
+    setSelected(null);
+  }, [data]);
 
   const checkAnswer = (answer: string) => {
     setSelected(answer);
     setTimeout(() => {
-      setSelected(null);
-      onNext();
-    }, 1500);
+      onAnswer(answer === data.correct_answer, data.difficulty);
+    }, 1200);
   };
 
   const decode = (str: string) => {
